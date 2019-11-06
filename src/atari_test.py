@@ -17,8 +17,10 @@ def test_final(f, timesteps=1000, timesleep=None):
     white_reward = 0
     black_reward = 0
     env = gym.make(config.gym_params['game_name']).env
-    observation = env.reset()
-    observation = observation / 255.0
+    # observation = env.reset()
+    # observation = observation / 255.0
+    env.reset()
+    observation = env.render(mode='rgb_array') / 255.0
     for t in range(timesteps):
         env.render()
         if timesleep:
@@ -29,14 +31,16 @@ def test_final(f, timesteps=1000, timesleep=None):
         # Get the index of the highest value, it's our action.
         action = np.argmax(values)
         # Play the action.
-        observation, reward, done, _ = env.step(action)
+        # observation, reward, done, _ = env.step(action)
+        obss, reward, done, _ = env.step(action)
         reward = int(reward)
         # Save the score of both players.
         if reward > 0:
             white_reward += reward
         elif reward < 0:
             black_reward += reward
-        observation = observation / 255.0
+        observation = env.render(mode='rgb_array') / 255.0
+        # observation = observation / 255.0
         if done:
             break
     env.render()

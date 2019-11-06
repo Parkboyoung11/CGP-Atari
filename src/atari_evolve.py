@@ -7,9 +7,22 @@ from atari_config_file import config, loss_fce, save_result
 from shutil import copyfile
 
 env = gym.make(config.gym_params['game_name']).env
+# # env = gym.make('Centipede-v0')
+# observation = env.reset()
+# # sys.exit()
+# action = 1
+# observation, reward, done, info = env.step(action)
+# while not done:
+#     env.render()
+#     print(observation[2][0])
+#     print(reward)
+#     observation, reward, done, info = env.step(action)
+#
+# sys.exit()
 
 def save_config():
-    copyfile("atari_config_file.py", "configs/best_res_rand%d.py" % config.oneplus_params["random_state"])
+    # copyfile("atari_config_file.py", "configs/best_res_rand%d.py" % config.oneplus_params["random_state"])
+    copyfile("atari_config_file.py", "configs/best_res_rand0.py")
 
 def train():
     # Create CGP graph.
@@ -27,9 +40,11 @@ def optimisation_fce(individual):
     rewards = np.zeros((num_episodes, timesteps))
     # Get evolved function.
     evolved_fce = compile(individual)
-    # Go through all episodes.
     for episode in range(num_episodes):
-        observation = env.reset() / 255.0
+        # observation = env.reset() / 255.0
+        ep_reward = 0
+        env.reset()
+        observation = env.render(mode='rgb_array') / 255.0
         # Go through all timesteps.
         for t in range(timesteps):
             # Evaluate evolved function and get 18 values for 18 actions.
@@ -39,12 +54,16 @@ def optimisation_fce(individual):
             # Get the index of the highest value, it's our action.
             action = np.argmax(values)
             # Play the action.
-            observation, reward, done, _ = env.step(action)
-            observation = observation / 255.0
+            # observation, reward, done, _ = env.step(action)
+            obss, reward, done, _ = env.step(action)
+            observation = env.render(mode='rgb_array') / 255.0
+            # observation = observation / 255.0
             # Save reward to array of rewards.
             rewards[episode, t] = reward
+            ep_reward += reward
             if done:
                 break
+        print(ep_reward)
     return loss_fce(rewards)
 
 if __name__ == '__main__':
